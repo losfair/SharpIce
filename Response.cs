@@ -56,5 +56,17 @@ namespace Ice {
 
             return this;
         }
+        public Stream CreateStream() {
+            req.RequireResponseNotSent();
+
+            unsafe {
+                CoreStream* t;
+                t = Core.ice_glue_response_stream(
+                    inst,
+                    req.Context
+                );
+                return new Stream(t);
+            }
+        }
     }
 }

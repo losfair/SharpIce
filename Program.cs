@@ -26,6 +26,20 @@ namespace Ice
             svr.Route(new string[] { "POST" }, "/echo", (req) => {
                 return Task.FromResult(req.CreateResponse().SetBody(req.Body));
             }, new string[] { "read_body" });
+            svr.Route("GET", "/stream", (req) => {
+                Response resp = req.CreateResponse();
+                Stream stream = resp.CreateStream();
+
+                Task t = new Task(() => {
+                    System.Threading.Thread.Sleep(1000);
+                    stream.Write("OK\n");
+                    System.Threading.Thread.Sleep(1000);
+                    stream.Close();
+                });
+                t.Start();
+
+                return Task.FromResult(resp);
+            });
 
             svr.Listen("127.0.0.1:1218");
             while(true) {

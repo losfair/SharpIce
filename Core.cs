@@ -152,6 +152,11 @@ namespace Ice {
             string value
         );
         [DllImport("libice_core.so")]
+        public static extern unsafe CoreStream* ice_glue_response_stream(
+            CoreResponse* resp,
+            CoreContext* ctx
+        );
+        [DllImport("libice_core.so")]
         public static extern unsafe bool ice_core_fire_callback(
             CoreCallInfo* call_info,
             CoreResponse* resp

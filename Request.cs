@@ -137,5 +137,12 @@ namespace Ice {
         }
 
         public SessionView Session = null;
+
+        public unsafe CoreContext* Context {
+            get {
+                RequireResponseNotSent();
+                return Core.ice_glue_request_borrow_context(inst);
+            }
+        }
     }
 }

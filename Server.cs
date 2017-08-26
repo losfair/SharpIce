@@ -54,9 +54,44 @@ namespace Ice {
             }
         }
 
-        public void Route(string[] methods, string path, EndpointHandler cb) {
+        public uint MaxRequestBodySize {
+            set {
+                unsafe {
+                    Core.ice_server_set_max_request_body_size(inst, value);
+                }
+            }
+        }
+
+        public ulong EndpointTimeoutMs {
+            set {
+                unsafe {
+                    Core.ice_server_set_endpoint_timeout_ms(inst, value);
+                }
+            }
+        }
+
+        public string SessionCookieName {
+            set {
+                unsafe {
+                    Core.ice_server_set_session_cookie_name(inst, value);
+                }
+            }
+        }
+
+        public ulong SessionTimeoutMs {
+            set {
+                unsafe {
+                    Core.ice_server_set_session_timeout_ms(inst, value);
+                }
+            }
+        }
+
+        public void Route(string[] methods, string path, EndpointHandler cb, string[] flags) {
             unsafe {
                 CoreEndpoint* ep = Core.ice_server_router_add_endpoint(inst, path);
+                foreach(string flag in flags) {
+                    Core.ice_core_endpoint_set_flag(ep, flag, true);
+                }
                 int epId = Core.ice_core_endpoint_get_id(ep);
 
                 HandlerInfo target;
@@ -68,6 +103,18 @@ namespace Ice {
                     target.AddTargetForMethod(m, cb);
                 }
             }
+        }
+
+        public void Route(string[] methods, string path, EndpointHandler cb) {
+            Route(methods, path, cb, new string[] {});
+        }
+
+        public void Route(string method, string path, EndpointHandler cb) {
+            Route(new string[] { method }, path, cb);
+        }
+
+        public void Route(string path, EndpointHandler cb) {
+            Route("", path, cb);
         }
 
         private Task<Response> defaultHandler(Request req) {

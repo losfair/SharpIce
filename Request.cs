@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Ice {
@@ -45,12 +46,27 @@ namespace Ice {
             return responseSent;
         }
 
-        public string method {
+        public string Method {
             get {
                 RequireResponseNotSent();
                 unsafe {
                     return Marshal.PtrToStringUTF8(Core.ice_glue_request_get_method(inst));
                 }
+            }
+        }
+
+        private Dictionary<string, string> _headers = null;
+        public Dictionary<string, string> Headers {
+            get {
+                RequireResponseNotSent();
+
+                if(_headers == null) {
+                    unsafe {
+                        _headers = StdMap.Deserialize(Core.ice_glue_request_get_headers(inst));
+                    }
+                }
+
+                return _headers;
             }
         }
     }

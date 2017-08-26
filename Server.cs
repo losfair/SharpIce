@@ -13,7 +13,7 @@ namespace Ice {
         }
         public Server.EndpointHandler GetTarget(Request req) {
             Server.EndpointHandler ret;
-            if(targets.TryGetValue(req.method, out ret)) {
+            if(targets.TryGetValue(req.Method, out ret)) {
                 return ret;
             }
             if(targets.TryGetValue("", out ret)) {

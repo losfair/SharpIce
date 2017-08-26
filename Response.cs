@@ -18,6 +18,12 @@ namespace Ice {
             }
         }
 
+        public void RequireNotSent() {
+            if(sent) {
+                throw new System.InvalidOperationException("Already sent");
+            }
+        }
+
         public void Send() {
             req.RequireResponseNotSent();
             req.SetResponseSent();
@@ -29,10 +35,26 @@ namespace Ice {
                 inst = null;
             }
         }
-        public void SetBody(byte[] body) {
+        public Response SetBody(byte[] body) {
+            RequireNotSent();
+
             unsafe {
                 Core.ice_glue_response_set_body(inst, body, (uint) body.Length);
             }
+
+            return this;
+        }
+        public Response SetBody(string body) {
+            return SetBody(System.Text.Encoding.UTF8.GetBytes(body));
+        }
+        public Response SetStatus(ushort status) {
+            RequireNotSent();
+
+            unsafe {
+                Core.ice_glue_response_set_status(inst, status);
+            }
+
+            return this;
         }
     }
 }

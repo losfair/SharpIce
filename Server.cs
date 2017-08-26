@@ -1,10 +1,35 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ice {
+    class HandlerInfo {
+        Dictionary<string, Server.EndpointHandler> targets;
+        public HandlerInfo() {
+            targets = new Dictionary<string, Server.EndpointHandler>();
+        }
+        public HandlerInfo(Server.EndpointHandler defaultTarget) {
+            targets = new Dictionary<string, Server.EndpointHandler>();
+            targets[""] = defaultTarget;
+        }
+        public Server.EndpointHandler GetTarget(Request req) {
+            Server.EndpointHandler ret;
+            if(targets.TryGetValue(req.method, out ret)) {
+                return ret;
+            }
+            if(targets.TryGetValue("", out ret)) {
+                return ret;
+            }
+            return null;
+        }
+        public void AddTargetForMethod(string method, Server.EndpointHandler target) {
+            targets[method] = target;
+        }
+    }
+
     public class Server {
-        public delegate Response EndpointHandler(Request req);
+        public delegate Task<Response> EndpointHandler(Request req);
         unsafe CoreServer* inst;
-        Dictionary<int, EndpointHandler> handlers;
+        Dictionary<int, HandlerInfo> handlers;
         Core.AsyncEndpointHandler endpointCallbackInst;
 
         public Server() {
@@ -13,8 +38,8 @@ namespace Ice {
                 inst = Core.ice_create_server();
                 Core.ice_server_set_async_endpoint_cb(inst, endpointCallbackInst);
             }
-            handlers = new Dictionary<int, EndpointHandler>();
-            handlers[-1] = defaultHandler;
+            handlers = new Dictionary<int, HandlerInfo>();
+            handlers[-1] = new HandlerInfo(defaultHandler);
         }
 
         public void Listen(string addr) {
@@ -29,14 +54,51 @@ namespace Ice {
             }
         }
 
-        private Response defaultHandler(Request req) {
-            return req.CreateResponse();
+        public void Route(string[] methods, string path, EndpointHandler cb) {
+            unsafe {
+                CoreEndpoint* ep = Core.ice_server_router_add_endpoint(inst, path);
+                int epId = Core.ice_core_endpoint_get_id(ep);
+
+                HandlerInfo target;
+                if(!handlers.TryGetValue(epId, out target)) {
+                    target = new HandlerInfo();
+                    handlers[epId] = target;
+                }
+                foreach(string m in methods) {
+                    target.AddTargetForMethod(m, cb);
+                }
+            }
+        }
+
+        private Task<Response> defaultHandler(Request req) {
+            return Task.FromResult(req.CreateResponse().SetStatus(404).SetBody("Not found"));
         }
 
         private unsafe void endpointCallback(int id, CoreCallInfo* callInfo) {
-            EndpointHandler target = handlers[id];
-            Response resp = target(new Request(callInfo));
-            resp.Send();
+            Task t = realEndpointCallback(id, new Request(callInfo));
+            if(!t.IsCompleted) t.Start();
+        }
+
+        private async Task realEndpointCallback(int id, Request req) {
+            try {
+                HandlerInfo info = handlers[id];
+                EndpointHandler target = info.GetTarget(req);
+                if(target == null) {
+                    target = handlers[-1].GetTarget(req);
+                }
+                Response resp;
+                
+                try {
+                    resp = await target(req);
+                } catch(System.Exception e) {
+                    resp = req.CreateResponse()
+                        .SetStatus(500)
+                        .SetBody(e.ToString());
+                }
+                resp.Send();
+            } catch(System.Exception e) {
+                System.Console.WriteLine(e);
+            }
         }
     }
 }

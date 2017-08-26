@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace Ice {
     public class Request {
         unsafe CoreRequest* inst;
@@ -41,6 +43,15 @@ namespace Ice {
 
         public bool ResponseIsSent() {
             return responseSent;
+        }
+
+        public string method {
+            get {
+                RequireResponseNotSent();
+                unsafe {
+                    return Marshal.PtrToStringUTF8(Core.ice_glue_request_get_method(inst));
+                }
+            }
         }
     }
 }

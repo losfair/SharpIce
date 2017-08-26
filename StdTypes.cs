@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Ice {
+namespace SharpIce {
     public class StdMap {
         public unsafe static Dictionary<string, string> Deserialize(CoreMap* _begin) {
             Dictionary<string, string> ret = new Dictionary<string, string>();

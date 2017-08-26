@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Ice {
+namespace SharpIce {
     class HandlerInfo {
         Dictionary<string, Server.EndpointHandler> targets;
         public HandlerInfo() {

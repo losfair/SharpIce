@@ -1,4 +1,4 @@
-namespace Ice {
+namespace SharpIce {
     public class Stream {
         unsafe CoreStream* inst;
         bool closed = false;

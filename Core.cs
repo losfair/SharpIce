@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Ice {
+namespace SharpIce {
     public unsafe struct CoreResource {};
     public unsafe struct CoreServer {};
     public unsafe struct CoreEndpoint {};

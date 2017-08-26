@@ -1,4 +1,4 @@
-namespace Ice {
+namespace SharpIce {
     public class Response {
         unsafe CoreResponse* inst;
         unsafe CoreCallInfo* callInfo;

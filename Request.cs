@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Ice {
+namespace SharpIce {
     public class Request {
         public class SessionView {
             Request req;

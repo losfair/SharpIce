@@ -183,5 +183,7 @@ namespace SharpIce {
         public static extern unsafe void ice_core_destroy_stream_provider(
             CoreStream* stream
         );
+        [DllImport("libice_core")]
+        public static extern unsafe bool ice_core_cervus_enabled();
     }
 }

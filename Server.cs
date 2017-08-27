@@ -117,6 +117,32 @@ namespace SharpIce {
             Route("", path, cb);
         }
 
+        public void AddTemplate(string name, string content) {
+            unsafe {
+                bool ret = Core.ice_server_add_template(inst, name, content);
+                if(!ret) {
+                    throw new System.ArgumentException("Invalid template");
+                }
+            }
+        }
+
+        public void LoadModule(string name, byte[] bitcode) {
+            unsafe {
+                if(!Core.ice_core_cervus_enabled()) {
+                    throw new System.NotImplementedException("Cervus engine not enabled");
+                }
+                bool ret = Core.ice_server_cervus_load_bitcode(
+                    inst,
+                    name,
+                    bitcode,
+                    (uint) bitcode.Length
+                );
+                if(!ret) {
+                    throw new System.ArgumentException("Invalid bitcode");
+                }
+            }
+        }
+
         private Task<Response> defaultHandler(Request req) {
             return Task.FromResult(req.CreateResponse().SetStatus(404).SetBody("Not found"));
         }

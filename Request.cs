@@ -5,7 +5,7 @@ namespace SharpIce {
     public class Request {
         public class SessionView {
             Request req;
-
+            
             public SessionView(Request _req) {
                 req = _req;
             }
@@ -54,6 +54,10 @@ namespace SharpIce {
             }
         }
 
+        public unsafe CoreRequest* GetCoreInstance() {
+            return inst;
+        }
+
         public Response CreateResponse() {
             RequireResponseNotSent();
 
@@ -80,17 +84,6 @@ namespace SharpIce {
 
         public bool ResponseIsSent() {
             return responseSent;
-        }
-
-        public string Method {
-            get {
-                RequireResponseNotSent();
-                unsafe {
-                    lock(instLock) {
-                        return Marshal.PtrToStringUTF8(Core.ice_glue_request_get_method(inst));
-                    }
-                }
-            }
         }
 
         private Dictionary<string, string> _headers = null;
@@ -174,6 +167,65 @@ namespace SharpIce {
                 lock(instLock) {
                     return Core.ice_glue_request_borrow_context(inst);
                 }
+            }
+        }
+
+        private string _method = null;
+        public string Method {
+            get {
+                RequireResponseNotSent();
+
+                if(_method == null) {
+                    lock(instLock) {
+                        unsafe {
+                            _method = Marshal.PtrToStringUTF8(
+                                Core.ice_glue_request_get_method(inst)
+                            );
+                        }
+                    }
+                }
+                return _method;
+            }
+        }
+
+        private string _remoteAddr = null;
+        public string RemoteAddr {
+            get {
+                RequireResponseNotSent();
+                if(_remoteAddr == null) {
+                    lock(instLock) {
+                        unsafe {
+                            _remoteAddr = Marshal.PtrToStringUTF8(
+                                Core.ice_glue_request_get_remote_addr(inst)
+                            );
+                        }
+                    }
+                }
+                return _remoteAddr;
+            }
+        }
+
+        private string _uri = null;
+        public string Uri {
+            get {
+                RequireResponseNotSent();
+                if(_uri == null) {
+                    lock(instLock) {
+                        unsafe {
+                            _uri = Marshal.PtrToStringUTF8(
+                                Core.ice_glue_request_get_uri(inst)
+                            );
+                        }
+                    }
+                }
+                return _uri;
+            }
+        }
+
+        public unsafe System.IntPtr RenderTemplateToOwned(string name, string data) {
+            RequireResponseNotSent();
+            lock(instLock) {
+                return Core.ice_glue_request_render_template_to_owned(inst, name, data);
             }
         }
     }

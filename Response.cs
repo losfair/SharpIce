@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace SharpIce {
     public class Response {
         unsafe CoreResponse* inst;
@@ -17,6 +19,10 @@ namespace SharpIce {
                     Core.ice_glue_destroy_response(inst);
                 }
             }
+        }
+
+        public unsafe CoreResponse* GetCoreInstance() {
+            return inst;
         }
 
         public void RequireNotSent() {
@@ -52,6 +58,23 @@ namespace SharpIce {
         public Response SetBody(string body) {
             return SetBody(System.Text.Encoding.UTF8.GetBytes(body));
         }
+
+        public Response RenderTemplate(string name, object data) {
+            string dataJson = JsonConvert.SerializeObject(data);
+            
+            unsafe {
+                System.IntPtr ret = req.RenderTemplateToOwned(name, dataJson);
+                if(ret == null) {
+                    throw new System.ArgumentException("Unable to render template");
+                }
+                lock(instLock) {
+                    Core.ice_glue_response_consume_rendered_template(inst, ret);
+                }
+            }
+
+            return this;
+        }
+
         public Response SetStatus(ushort status) {
             RequireNotSent();
 

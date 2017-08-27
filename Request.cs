@@ -136,6 +136,19 @@ namespace SharpIce {
             }
         }
 
+        private Dictionary<string, string> _urlParams = null;
+        public Dictionary<string, string> UrlParams {
+            get {
+                RequireResponseNotSent();
+                if(_urlParams == null) {
+                    unsafe {
+                        _urlParams = StdMap.Deserialize(Core.ice_glue_request_get_url_params(inst));
+                    }
+                }
+                return _urlParams;
+            }
+        }
+
         public SessionView Session = null;
 
         public unsafe CoreContext* Context {

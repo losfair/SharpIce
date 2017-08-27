@@ -60,6 +60,7 @@ namespace SharpIce {
         }
 
         public Response SetJson(object data) {
+            SetHeader("Content-Type", "application/json");
             return SetBody(JsonConvert.SerializeObject(data));
         }
 

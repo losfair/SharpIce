@@ -123,7 +123,6 @@ namespace SharpIce {
 
         private unsafe void endpointCallback(int id, CoreCallInfo* callInfo) {
             Task t = realEndpointCallback(id, new Request(callInfo));
-            if(!t.IsCompleted) t.Start();
         }
 
         private async Task realEndpointCallback(int id, Request req) {

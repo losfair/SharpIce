@@ -59,6 +59,46 @@ namespace SharpIce {
             return SetBody(System.Text.Encoding.UTF8.GetBytes(body));
         }
 
+        public Response SetFile(string path) {
+            RequireNotSent();
+
+            unsafe {
+                lock(instLock) {
+                    Core.ice_glue_response_set_file(inst, path);
+                }
+            }
+
+            return this;
+        }
+
+        public Response AddHeader(string key, string value) {
+            RequireNotSent();
+
+            unsafe {
+                lock(instLock) {
+                    Core.ice_glue_response_add_header(inst, key, value);
+                }
+            }
+
+            return this;
+        }
+
+        public Response SetHeader(string key, string value) {
+            return AddHeader(key, value);
+        }
+
+        public Response SetCookie(string key, string value) {
+            RequireNotSent();
+
+            unsafe {
+                lock(instLock) {
+                    Core.ice_glue_response_set_cookie(inst, key, value);
+                }
+            }
+
+            return this;
+        }
+
         public Response RenderTemplate(string name, object data) {
             string dataJson = JsonConvert.SerializeObject(data);
             

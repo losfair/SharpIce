@@ -1,6 +1,7 @@
 namespace SharpIce {
     public class Response {
         unsafe CoreResponse* inst;
+        object instLock = new object();
         unsafe CoreCallInfo* callInfo;
         Request req;
         bool sent = false;
@@ -30,16 +31,20 @@ namespace SharpIce {
             sent = true;
 
             unsafe {
-                Core.ice_core_fire_callback(callInfo, inst);
-                callInfo = null;
-                inst = null;
+                lock(instLock) {
+                    Core.ice_core_fire_callback(callInfo, inst);
+                    callInfo = null;
+                    inst = null;
+                }
             }
         }
         public Response SetBody(byte[] body) {
             RequireNotSent();
 
             unsafe {
-                Core.ice_glue_response_set_body(inst, body, (uint) body.Length);
+                lock(instLock) {
+                    Core.ice_glue_response_set_body(inst, body, (uint) body.Length);
+                }
             }
 
             return this;
@@ -51,7 +56,9 @@ namespace SharpIce {
             RequireNotSent();
 
             unsafe {
-                Core.ice_glue_response_set_status(inst, status);
+                lock(instLock) {
+                    Core.ice_glue_response_set_status(inst, status);
+                }
             }
 
             return this;
@@ -61,10 +68,12 @@ namespace SharpIce {
 
             unsafe {
                 CoreStream* t;
-                t = Core.ice_glue_response_stream(
-                    inst,
-                    req.Context
-                );
+                lock(instLock) {
+                    t = Core.ice_glue_response_stream(
+                        inst,
+                        req.Context
+                    );
+                }
                 return new Stream(t);
             }
         }

@@ -15,7 +15,10 @@ namespace SharpIce {
 
                 string value = null;
                 unsafe {
-                    System.IntPtr rawValue = Core.ice_glue_request_get_session_item(req.inst, key);
+                    System.IntPtr rawValue;
+                    lock(req.instLock) {
+                        rawValue = Core.ice_glue_request_get_session_item(req.inst, key);
+                    }
                     if(rawValue != null) {
                         value = Marshal.PtrToStringUTF8(rawValue);
                     }
@@ -27,11 +30,14 @@ namespace SharpIce {
                 req.RequireResponseNotSent();
 
                 unsafe {
-                    Core.ice_glue_request_set_session_item(req.inst, key, value);
+                    lock(req.instLock) {
+                        Core.ice_glue_request_set_session_item(req.inst, key, value);
+                    }
                 }
             }
         }
         unsafe CoreRequest* inst;
+        object instLock = new object();
         unsafe CoreCallInfo* callInfo;
         bool responseSent = false;
 
@@ -80,7 +86,9 @@ namespace SharpIce {
             get {
                 RequireResponseNotSent();
                 unsafe {
-                    return Marshal.PtrToStringUTF8(Core.ice_glue_request_get_method(inst));
+                    lock(instLock) {
+                        return Marshal.PtrToStringUTF8(Core.ice_glue_request_get_method(inst));
+                    }
                 }
             }
         }
@@ -92,7 +100,9 @@ namespace SharpIce {
 
                 if(_headers == null) {
                     unsafe {
-                        _headers = StdMap.Deserialize(Core.ice_glue_request_get_headers(inst));
+                        lock(instLock) {
+                            _headers = StdMap.Deserialize(Core.ice_glue_request_get_headers(inst));
+                        }
                     }
                 }
 
@@ -107,7 +117,9 @@ namespace SharpIce {
 
                 if(_cookies == null) {
                     unsafe {
-                        _cookies = StdMap.Deserialize(Core.ice_glue_request_get_cookies(inst));
+                        lock(instLock) {
+                            _cookies = StdMap.Deserialize(Core.ice_glue_request_get_cookies(inst));
+                        }
                     }
                 }
 
@@ -123,7 +135,10 @@ namespace SharpIce {
                 if(_body == null) {
                     unsafe {
                         int bodyLen = 0;
-                        byte* bodyPtr = Core.ice_glue_request_get_body(inst, ref bodyLen);
+                        byte* bodyPtr;
+                        lock(instLock) {
+                            bodyPtr = Core.ice_glue_request_get_body(inst, ref bodyLen);
+                        }
                         if(bodyPtr == null || bodyLen == 0) {
                             return null;
                         }
@@ -142,7 +157,9 @@ namespace SharpIce {
                 RequireResponseNotSent();
                 if(_urlParams == null) {
                     unsafe {
-                        _urlParams = StdMap.Deserialize(Core.ice_glue_request_get_url_params(inst));
+                        lock(instLock) {
+                            _urlParams = StdMap.Deserialize(Core.ice_glue_request_get_url_params(inst));
+                        }
                     }
                 }
                 return _urlParams;
@@ -154,7 +171,9 @@ namespace SharpIce {
         public unsafe CoreContext* Context {
             get {
                 RequireResponseNotSent();
-                return Core.ice_glue_request_borrow_context(inst);
+                lock(instLock) {
+                    return Core.ice_glue_request_borrow_context(inst);
+                }
             }
         }
     }

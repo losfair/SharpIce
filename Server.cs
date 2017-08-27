@@ -4,12 +4,22 @@ using System.Threading.Tasks;
 namespace SharpIce {
     class HandlerInfo {
         Dictionary<string, Server.EndpointHandler> targets;
+        unsafe CoreEndpoint* ep = null;
         public HandlerInfo() {
             targets = new Dictionary<string, Server.EndpointHandler>();
         }
         public HandlerInfo(Server.EndpointHandler defaultTarget) {
             targets = new Dictionary<string, Server.EndpointHandler>();
             targets[""] = defaultTarget;
+        }
+        public unsafe void SetCoreEndpoint(CoreEndpoint* _ep) {
+            ep = _ep;
+        }
+        public unsafe CoreEndpoint* GetCoreEndpoint() {
+            if(ep == null) {
+                throw new System.InvalidOperationException("Invalid endpoint");
+            }
+            return ep;
         }
         public Server.EndpointHandler GetTarget(Request req) {
             Server.EndpointHandler ret;
@@ -30,6 +40,7 @@ namespace SharpIce {
         public delegate Task<Response> EndpointHandler(Request req);
         unsafe CoreServer* inst;
         Dictionary<int, HandlerInfo> handlers;
+        Dictionary<string, int> endpointIds;
         Core.AsyncEndpointHandler endpointCallbackInst;
 
         public Server() {
@@ -38,7 +49,10 @@ namespace SharpIce {
                 inst = Core.ice_create_server();
                 Core.ice_server_set_async_endpoint_cb(inst, endpointCallbackInst);
             }
+
             handlers = new Dictionary<int, HandlerInfo>();
+            endpointIds = new Dictionary<string, int>();
+
             handlers[-1] = new HandlerInfo(defaultHandler);
         }
 
@@ -88,17 +102,26 @@ namespace SharpIce {
 
         public void Route(string[] methods, string path, EndpointHandler cb, string[] flags) {
             unsafe {
-                CoreEndpoint* ep = Core.ice_server_router_add_endpoint(inst, path);
-                foreach(string flag in flags) {
-                    Core.ice_core_endpoint_set_flag(ep, flag, true);
-                }
-                int epId = Core.ice_core_endpoint_get_id(ep);
-
+                int epId = 0;
                 HandlerInfo target;
-                if(!handlers.TryGetValue(epId, out target)) {
+
+                if(endpointIds.TryGetValue(path, out epId)) {
+                    target = handlers[epId];
+                } else {
+                    CoreEndpoint* ep = Core.ice_server_router_add_endpoint(inst, path);
+                    epId = Core.ice_core_endpoint_get_id(ep);
+
                     target = new HandlerInfo();
+                    target.SetCoreEndpoint(ep);
+
                     handlers[epId] = target;
+                    endpointIds[path] = epId;
                 }
+
+                foreach(string flag in flags) {
+                    Core.ice_core_endpoint_set_flag(target.GetCoreEndpoint(), flag, true);
+                }
+
                 foreach(string m in methods) {
                     target.AddTargetForMethod(m, cb);
                 }

@@ -59,6 +59,10 @@ namespace SharpIce {
             return SetBody(System.Text.Encoding.UTF8.GetBytes(body));
         }
 
+        public Response SetJson(object data) {
+            return SetBody(JsonConvert.SerializeObject(data));
+        }
+
         public Response SetFile(string path) {
             RequireNotSent();
 

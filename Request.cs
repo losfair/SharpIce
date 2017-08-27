@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json;
 
 namespace SharpIce {
     public class Request {
@@ -141,6 +142,21 @@ namespace SharpIce {
                 }
 
                 return _body;
+            }
+        }
+
+        public T ParseJsonBody<T>() {
+            return JsonConvert.DeserializeObject<T>(
+                System.Text.Encoding.UTF8.GetString(Body)
+            );
+        }
+
+        public Dictionary<string, string> ParseUrlencodedBody() {
+            RequireResponseNotSent();
+            lock(instLock) {
+                unsafe {
+                    return StdMap.Deserialize(Core.ice_glue_request_get_body_as_urlencoded(inst));
+                }
             }
         }
 

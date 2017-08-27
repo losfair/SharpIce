@@ -103,6 +103,8 @@ namespace SharpIce {
             ref int len
         );
         [DllImport("libice_core")]
+        public static extern unsafe CoreMap* ice_glue_request_get_body_as_urlencoded(CoreRequest* req);
+        [DllImport("libice_core")]
         public static extern unsafe System.IntPtr ice_glue_request_render_template_to_owned(
             CoreRequest* req,
             string name,

@@ -180,7 +180,7 @@ namespace SharpIce {
             string uri = req.Uri;
 
             foreach(var p in fallbackHandlers) {
-                if(uri.StartsWith(p.Key)) {
+                if(uri.StartsWith(p.Key, System.StringComparison.Ordinal)) {
                     EndpointHandler target = p.Value.GetTarget(req);
                     return target(req);
                 }

@@ -6,7 +6,7 @@ namespace SharpIce {
             Dictionary<string, string> ret = new Dictionary<string, string>();
 
             if(_begin == null) {
-                throw new System.InvalidOperationException("Invalid input");
+                throw new System.InvalidOperationException("NULL CoreMap");
             }
 
             byte* begin = (byte*) _begin;

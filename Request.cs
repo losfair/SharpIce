@@ -160,6 +160,23 @@ namespace SharpIce {
             }
         }
 
+        private Dictionary<string, string> _query = null;
+        public Dictionary<string, string> Query {
+            get {
+                RequireResponseNotSent();
+                if(_query == null) {
+                    unsafe {
+                        lock(instLock) {
+                            _query = StdMap.Deserialize(
+                                Core.ice_glue_request_get_query(inst)
+                            );
+                        }
+                    }
+                }
+                return _query;
+            }
+        }
+
         private Dictionary<string, string> _urlParams = null;
         public Dictionary<string, string> UrlParams {
             get {
@@ -167,7 +184,9 @@ namespace SharpIce {
                 if(_urlParams == null) {
                     unsafe {
                         lock(instLock) {
-                            _urlParams = StdMap.Deserialize(Core.ice_glue_request_get_url_params(inst));
+                            _urlParams = StdMap.Deserialize(
+                                Core.ice_glue_request_get_url_params(inst)
+                            );
                         }
                     }
                 }

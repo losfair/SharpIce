@@ -98,6 +98,8 @@ namespace SharpIce {
         [DllImport("libice_core")]
         public static extern unsafe CoreMap* ice_glue_request_get_cookies(CoreRequest* req);
         [DllImport("libice_core")]
+        public static extern unsafe CoreMap* ice_glue_request_get_query(CoreRequest* req);
+        [DllImport("libice_core")]
         public static extern unsafe byte* ice_glue_request_get_body(
             CoreRequest* req,
             ref int len

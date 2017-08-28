@@ -1,0 +1,24 @@
+using System.Threading.Tasks;
+
+namespace SharpIce {
+    public class JsonView : View {
+        public JsonView(string _path, string[] _methods, string[] _flags)
+            : base(_path, _methods, _flags) {
+        }
+        public JsonView(string _path, string[] _methods)
+            : base(_path, _methods) {
+        }
+        public JsonView(string _path)
+            : base(_path) {
+        }
+
+        public sealed override async Task<Response> OnRequest(Request req) {
+            object data = await Feed(req);
+            return req.CreateResponse().SetJson(data);
+        }
+
+        protected virtual Task<object> Feed(Request req) {
+            throw new System.NotImplementedException();
+        }
+    }
+}

@@ -19,12 +19,12 @@ namespace SharpIce {
                 filePath = _filePath;
         }
 
-        protected override void Prepare(Server svr) {
+        protected sealed override void Prepare(Server svr) {
             content = System.IO.File.ReadAllText(filePath);
             svr.AddTemplate(filePath, content);
         }
 
-        public override async Task<Response> OnRequest(Request req) {
+        public sealed override async Task<Response> OnRequest(Request req) {
             if(filePath == null) {
                 throw new System.InvalidOperationException("Template file path not set");
             }

@@ -109,7 +109,7 @@ namespace SharpIce {
             
             unsafe {
                 System.IntPtr ret = req.RenderTemplateToOwned(name, dataJson);
-                if(ret == null) {
+                if(ret == System.IntPtr.Zero) {
                     throw new System.ArgumentException("Unable to render template");
                 }
                 lock(instLock) {

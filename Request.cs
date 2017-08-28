@@ -20,7 +20,7 @@ namespace SharpIce {
                     lock(req.instLock) {
                         rawValue = Core.ice_glue_request_get_session_item(req.inst, key);
                     }
-                    if(rawValue != null) {
+                    if(rawValue != System.IntPtr.Zero) {
                         value = Marshal.PtrToStringUTF8(rawValue);
                     }
                 }

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace SharpIce {
     public class View {
@@ -9,19 +10,9 @@ namespace SharpIce {
         protected string[] methods = new string[] { "GET" };
         protected string[] flags = new string[] {};
 
-        public View(string _path, string[] _methods, string[] _flags) {
-            path = _path;
-            methods = _methods;
-            flags = _flags;
-        }
-
-        public View(string _path, string[] _methods) {
-            path = _path;
-            methods = _methods;
-        }
-
         public View(string _path) {
             path = _path;
+            setProperties();
         }
 
         public void AddToServer(Server svr) {
@@ -84,6 +75,27 @@ namespace SharpIce {
         private string normalizedLocalPath {
             get {
                 return path.Trim('/');
+            }
+        }
+
+        private void setProperties() {
+            MemberInfo info = this.GetType();
+            List<string> currentFlags = new List<string>();
+            List<string> currentMethods = new List<string>();
+
+            foreach(object att in info.GetCustomAttributes(true)) {
+                if(att is CoreFlag.Base) {
+                    CoreFlag.Base flag = (CoreFlag.Base) att;
+                    currentFlags.Add(flag.Name);
+                } else if(att is HttpMethod.Base) {
+                    HttpMethod.Base method = (HttpMethod.Base) att;
+                    currentMethods.Add(method.Name);
+                }
+            }
+
+            flags = currentFlags.ToArray();
+            if(currentMethods.Count != 0) {
+                methods = currentMethods.ToArray();
             }
         }
     }

@@ -257,6 +257,16 @@ namespace SharpIce {
             }
         }
 
+        private string _url = null;
+        public string Url {
+            get {
+                if(_url == null) {
+                    _url = Uri.Split("?")[0];
+                }
+                return _url;
+            }
+        }
+
         public unsafe System.IntPtr RenderTemplateToOwned(string name, string data) {
             RequireResponseNotSent();
             lock(instLock) {

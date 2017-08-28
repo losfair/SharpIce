@@ -6,8 +6,7 @@ namespace SharpIce {
         private string filePath = null;
         private string content = null;
 
-        public TemplateView(string _filePath, string _path)
-            : base(_path) {
+        public TemplateView(string _filePath) {
                 filePath = _filePath;
         }
 

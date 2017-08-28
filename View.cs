@@ -10,8 +10,7 @@ namespace SharpIce {
         protected string[] methods = new string[] { "GET" };
         protected string[] flags = new string[] {};
 
-        public View(string _path) {
-            path = _path;
+        public View() {
             setProperties();
         }
 
@@ -82,6 +81,7 @@ namespace SharpIce {
             MemberInfo info = this.GetType();
             List<string> currentFlags = new List<string>();
             List<string> currentMethods = new List<string>();
+            string currentPath = null;
 
             foreach(object att in info.GetCustomAttributes(true)) {
                 if(att is CoreFlag.Base) {
@@ -90,9 +90,17 @@ namespace SharpIce {
                 } else if(att is HttpMethod.Base) {
                     HttpMethod.Base method = (HttpMethod.Base) att;
                     currentMethods.Add(method.Name);
+                } else if(att is Routing.Endpoint) {
+                    Routing.Endpoint ep = (Routing.Endpoint) att;
+                    currentPath = ep.Path;
                 }
             }
 
+            if(currentPath == null) {
+                throw new System.InvalidOperationException("Routing endpoint not specified");
+            }
+
+            path = currentPath;
             flags = currentFlags.ToArray();
             if(currentMethods.Count != 0) {
                 methods = currentMethods.ToArray();

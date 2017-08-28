@@ -2,10 +2,6 @@ using System.Threading.Tasks;
 
 namespace SharpIce {
     public class JsonView : View {
-        public JsonView(string _path)
-            : base(_path) {
-        }
-
         public sealed override async Task<Response> OnRequest(Request req) {
             object data = await Feed(req);
             return req.CreateResponse().SetJson(data);

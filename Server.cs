@@ -40,6 +40,7 @@ namespace SharpIce {
         public delegate Task<Response> EndpointHandler(Request req);
         unsafe CoreServer* inst;
         Dictionary<int, HandlerInfo> handlers;
+        List<KeyValuePair<string, HandlerInfo>> fallbackHandlers;
         Dictionary<string, int> endpointIds;
         Core.AsyncEndpointHandler endpointCallbackInst;
 
@@ -51,6 +52,7 @@ namespace SharpIce {
             }
 
             handlers = new Dictionary<int, HandlerInfo>();
+            fallbackHandlers = new List<KeyValuePair<string, HandlerInfo>>();
             endpointIds = new Dictionary<string, int>();
 
             handlers[-1] = new HandlerInfo(defaultHandler);
@@ -98,6 +100,14 @@ namespace SharpIce {
                     Core.ice_server_set_session_timeout_ms(inst, value);
                 }
             }
+        }
+
+        public void RouteFallback(string[] methods, string path, EndpointHandler cb) {
+            HandlerInfo target = new HandlerInfo();
+            foreach(string m in methods) {
+                target.AddTargetForMethod(m, cb);
+            }
+            fallbackHandlers.Insert(0, new KeyValuePair<string, HandlerInfo>(path, target));
         }
 
         public void Route(string[] methods, string path, EndpointHandler cb, string[] flags) {
@@ -167,6 +177,15 @@ namespace SharpIce {
         }
 
         private Task<Response> defaultHandler(Request req) {
+            string uri = req.Uri;
+
+            foreach(var p in fallbackHandlers) {
+                if(uri.StartsWith(p.Key)) {
+                    EndpointHandler target = p.Value.GetTarget(req);
+                    return target(req);
+                }
+            }
+
             return Task.FromResult(req.CreateResponse().SetStatus(404).SetBody("Not found"));
         }
 

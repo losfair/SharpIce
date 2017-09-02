@@ -46,7 +46,7 @@ namespace SharpIce {
 
         public Server() {
             unsafe {
-                endpointCallbackInst = endpointCallback;
+                endpointCallbackInst = new Core.AsyncEndpointHandler(endpointCallback);
                 inst = Core.ice_create_server();
                 Core.ice_server_set_async_endpoint_cb(inst, endpointCallbackInst);
             }

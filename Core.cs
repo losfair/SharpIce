@@ -12,6 +12,7 @@ namespace SharpIce {
     public unsafe struct CoreCustomProperties {};
     public unsafe struct CoreStream {};
     public class Core {
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void AsyncEndpointHandler(int id, CoreCallInfo* call_info);
 
         [DllImport("libice_core")]

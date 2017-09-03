@@ -37,12 +37,15 @@ namespace SharpIce {
     }
 
     public class Server {
+        static List<Server> runningServers = new List<Server>();
+
         public delegate Task<Response> EndpointHandler(Request req);
         unsafe CoreServer* inst;
         Dictionary<int, HandlerInfo> handlers;
         List<KeyValuePair<string, HandlerInfo>> fallbackHandlers;
         Dictionary<string, int> endpointIds;
         Core.AsyncEndpointHandler endpointCallbackInst;
+        bool running = false;
 
         public Server() {
             unsafe {
@@ -59,6 +62,12 @@ namespace SharpIce {
         }
 
         public void Listen(string addr) {
+            if(running) {
+                throw new System.InvalidOperationException("Server already started");
+            }
+            running = true;
+            runningServers.Add(this);
+
             unsafe {
                 Core.ice_server_listen(inst, addr);
             }

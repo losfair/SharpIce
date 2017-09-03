@@ -15,6 +15,12 @@ namespace SharpIce {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void AsyncEndpointHandler(int id, CoreCallInfo* call_info);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void GetSessionItemCallback(CoreResource* data, System.IntPtr value);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void SetSessionItemCallback(CoreResource* data);
+
         [DllImport("libice_core")]
         public static extern unsafe CoreServer* ice_create_server();
         [DllImport("libice_core")]
@@ -62,6 +68,8 @@ namespace SharpIce {
         [DllImport("libice_core")]
         public static extern unsafe bool ice_server_cervus_load_bitcode(CoreServer* server, string name, byte[] data, uint len);
         [DllImport("libice_core")]
+        public static extern unsafe void ice_server_use_redis_session_storage(CoreServer* server, string conn_str);
+        [DllImport("libice_core")]
         public static extern unsafe void ice_context_set_custom_app_data(CoreServer* server, CoreResource* data);
         [DllImport("libice_core")]
         public static extern unsafe System.IntPtr ice_glue_request_get_remote_addr(CoreRequest* req);
@@ -77,12 +85,25 @@ namespace SharpIce {
             string key
         );
         [DllImport("libice_core")]
-        public static extern unsafe CoreMap* ice_glue_request_get_session_items(CoreRequest* req);
+        public static extern unsafe void ice_glue_request_get_session_item_async(
+            CoreRequest* req,
+            string key,
+            GetSessionItemCallback cb,
+            CoreResource* call_with
+        );
         [DllImport("libice_core")]
         public static extern unsafe void ice_glue_request_set_session_item(
             CoreRequest* req,
             string key,
             string value
+        );
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_glue_request_set_session_item_async(
+            CoreRequest* req,
+            string key,
+            string value,
+            SetSessionItemCallback cb,
+            CoreResource* call_with
         );
         [DllImport("libice_core")]
         public static extern unsafe System.IntPtr ice_glue_request_get_header(

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace SharpIce {
@@ -35,6 +36,51 @@ namespace SharpIce {
                         Core.ice_glue_request_set_session_item(req.inst, key, value);
                     }
                 }
+            }
+
+            public async Task<string> GetAsync(string key) {
+                req.RequireResponseNotSent();
+
+                var tcs = new TaskCompletionSource<string>();
+
+                unsafe {
+                    lock(req.instLock) {
+                        Core.ice_glue_request_get_session_item_async(
+                            req.inst,
+                            key,
+                            (_, retValue) => {
+                                if(retValue != System.IntPtr.Zero) {
+                                    tcs.SetResult(Marshal.PtrToStringUTF8(retValue));
+                                } else {
+                                    tcs.SetResult(null);
+                                }
+                            },
+                            null
+                        );
+                    }
+                }
+
+                return await tcs.Task;
+            }
+
+            public async Task SetAsync(string key, string value) {
+                req.RequireResponseNotSent();
+
+                var tcs = new TaskCompletionSource<bool>();
+
+                unsafe {
+                    lock(req.instLock) {
+                        Core.ice_glue_request_set_session_item_async(
+                            req.inst,
+                            key,
+                            value,
+                            (_) => tcs.SetResult(true),
+                            null
+                        );
+                    }
+                }
+
+                await tcs.Task;
             }
         }
         unsafe CoreRequest* inst;

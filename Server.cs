@@ -176,6 +176,12 @@ namespace SharpIce {
             }
         }
 
+        public void UseRedisSessionStorage(string url) {
+            unsafe {
+                Core.ice_server_use_redis_session_storage(inst, url);
+            }
+        }
+
         private Task<Response> defaultHandler(Request req) {
             string uri = req.Uri;
 

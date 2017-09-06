@@ -11,6 +11,7 @@ namespace SharpIce {
     public unsafe struct CoreContext {};
     public unsafe struct CoreCustomProperties {};
     public unsafe struct CoreStream {};
+    public unsafe struct CoreKVStorage {};
     public class Core {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void AsyncEndpointHandler(int id, CoreCallInfo* call_info);
@@ -20,6 +21,15 @@ namespace SharpIce {
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void SetSessionItemCallback(CoreResource* data);
+        
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void KVStorageGetItemCallback(CoreResource* data, System.IntPtr value);
+        
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void KVStorageSetItemCallback(CoreResource* data);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void KVStorageRemoveItemCallback(CoreResource* data);
 
         [DllImport("libice_core")]
         public static extern unsafe CoreServer* ice_create_server();
@@ -211,5 +221,38 @@ namespace SharpIce {
         );
         [DllImport("libice_core")]
         public static extern unsafe bool ice_core_cervus_enabled();
+
+        [DllImport("libice_core")]
+        public static extern unsafe CoreKVStorage* ice_storage_kv_create_with_redis_backend(
+            string conn_str
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_storage_kv_destroy(CoreKVStorage* handle);
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_storage_kv_get(
+            CoreKVStorage* handle,
+            string k,
+            KVStorageGetItemCallback cb,
+            CoreResource* call_with
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_storage_kv_set(
+            CoreKVStorage* handle,
+            string k,
+            string v,
+            KVStorageSetItemCallback cb,
+            CoreResource* call_with
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_storage_kv_remove(
+            CoreKVStorage* handle,
+            string k,
+            KVStorageRemoveItemCallback cb,
+            CoreResource* call_with
+        );
     }
 }

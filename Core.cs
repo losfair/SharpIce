@@ -12,6 +12,8 @@ namespace SharpIce {
     public unsafe struct CoreCustomProperties {};
     public unsafe struct CoreStream {};
     public unsafe struct CoreKVStorage {};
+    public unsafe struct CoreHashMapExt {};
+
     public class Core {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void AsyncEndpointHandler(int id, CoreCallInfo* call_info);
@@ -252,6 +254,48 @@ namespace SharpIce {
             CoreKVStorage* handle,
             string k,
             KVStorageRemoveItemCallback cb,
+            CoreResource* call_with
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_storage_kv_expire_sec(
+            CoreKVStorage* handle,
+            string k,
+            uint t,
+            KVStorageRemoveItemCallback cb,
+            CoreResource* call_with
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe CoreHashMapExt* ice_storage_kv_get_hash_map_ext(
+            CoreKVStorage* handle
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_storage_kv_hash_map_ext_get(
+            CoreHashMapExt* hm,
+            string k,
+            string map_key,
+            KVStorageGetItemCallback callback,
+            CoreResource* call_with
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_storage_kv_hash_map_ext_set(
+            CoreHashMapExt* hm,
+            string k,
+            string map_key,
+            string v,
+            KVStorageSetItemCallback callback,
+            CoreResource* call_with
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_storage_kv_hash_map_ext_remove(
+            CoreHashMapExt* hm,
+            string k,
+            string map_key,
+            KVStorageRemoveItemCallback callback,
             CoreResource* call_with
         );
     }

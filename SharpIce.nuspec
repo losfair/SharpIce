@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>ProjectIce.SharpIce</id>
-    <version>0.2.4</version>
+    <version>0.2.5</version>
     <title>SharpIce</title>
     <authors>Heyang Zhou</authors>
     <owners>losfair</owners>

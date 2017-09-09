@@ -80,7 +80,7 @@ namespace SharpIce {
         [DllImport("libice_core")]
         public static extern unsafe bool ice_server_cervus_load_bitcode(CoreServer* server, string name, byte[] data, uint len);
         [DllImport("libice_core")]
-        public static extern unsafe void ice_server_use_redis_session_storage(CoreServer* server, string conn_str);
+        public static extern unsafe void ice_server_set_session_storage_provider(CoreServer* server, CoreKVStorage* provider);
         [DllImport("libice_core")]
         public static extern unsafe void ice_context_set_custom_app_data(CoreServer* server, CoreResource* data);
         [DllImport("libice_core")]
@@ -92,22 +92,11 @@ namespace SharpIce {
         [DllImport("libice_core")]
         public static extern unsafe System.IntPtr ice_glue_request_get_session_id(CoreRequest* req);
         [DllImport("libice_core")]
-        public static extern unsafe System.IntPtr ice_glue_request_get_session_item(
-            CoreRequest* req,
-            string key
-        );
-        [DllImport("libice_core")]
         public static extern unsafe void ice_glue_request_get_session_item_async(
             CoreRequest* req,
             string key,
             GetSessionItemCallback cb,
             CoreResource* call_with
-        );
-        [DllImport("libice_core")]
-        public static extern unsafe void ice_glue_request_set_session_item(
-            CoreRequest* req,
-            string key,
-            string value
         );
         [DllImport("libice_core")]
         public static extern unsafe void ice_glue_request_set_session_item_async(

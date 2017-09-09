@@ -13,29 +13,14 @@ namespace SharpIce {
             }
 
             public string Get(string key) {
-                req.RequireResponseNotSent();
-
-                string value = null;
-                unsafe {
-                    System.IntPtr rawValue;
-                    lock(req.instLock) {
-                        rawValue = Core.ice_glue_request_get_session_item(req.inst, key);
-                    }
-                    if(rawValue != System.IntPtr.Zero) {
-                        value = Marshal.PtrToStringUTF8(rawValue);
-                    }
-                }
-                return value;
+                var t = Task.Run(() => GetAsync(key));
+                t.Wait();
+                return t.Result;
             }
 
             public void Set(string key, string value) {
-                req.RequireResponseNotSent();
-
-                unsafe {
-                    lock(req.instLock) {
-                        Core.ice_glue_request_set_session_item(req.inst, key, value);
-                    }
-                }
+                var t = Task.Run(() => SetAsync(key, value));
+                t.Wait();
             }
 
             public async Task<string> GetAsync(string key) {

@@ -185,9 +185,9 @@ namespace SharpIce {
             }
         }
 
-        public void UseRedisSessionStorage(string url) {
+        public void SetSessionStorageProvider(KeyValueStorage storage) {
             unsafe {
-                Core.ice_server_use_redis_session_storage(inst, url);
+                Core.ice_server_set_session_storage_provider(inst, storage.GetHandle());
             }
         }
 

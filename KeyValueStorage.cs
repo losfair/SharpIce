@@ -91,6 +91,10 @@ namespace SharpIce {
 
             await tcs.Task;
         }
+
+        public unsafe CoreKVStorage* GetHandle() {
+            return handle;
+        }
     }
 
     public class KeyValueStorageHashMapExt {

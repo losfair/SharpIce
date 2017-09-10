@@ -131,18 +131,17 @@ namespace SharpIce {
 
             return this;
         }
-        public Stream CreateStream() {
+        public WriteStream CreateStream() {
             req.RequireResponseNotSent();
 
             unsafe {
-                CoreStream* t;
+                CoreWriteStream* t;
                 lock(instLock) {
-                    t = Core.ice_glue_response_stream(
-                        inst,
-                        req.Context
+                    t = Core.ice_glue_response_create_wstream(
+                        inst
                     );
                 }
-                return new Stream(t);
+                return new WriteStream(t);
             }
         }
     }

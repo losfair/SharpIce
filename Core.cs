@@ -10,11 +10,21 @@ namespace SharpIce {
     public unsafe struct CoreMap {};
     public unsafe struct CoreContext {};
     public unsafe struct CoreCustomProperties {};
-    public unsafe struct CoreStream {};
     public unsafe struct CoreKVStorage {};
     public unsafe struct CoreHashMapExt {};
+    public unsafe struct CoreReadStream {};
+    public unsafe struct CoreWriteStream {};
+
+    public unsafe struct CoreRawTxRxPair {
+        public CoreWriteStream* tx;
+        public CoreReadStream* rx;
+    }
 
     public class Core {
+        static Core() {
+            Metadata.EnsureCoreVersion();
+        }
+
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void AsyncEndpointHandler(int id, CoreCallInfo* call_info);
 
@@ -32,6 +42,15 @@ namespace SharpIce {
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void KVStorageRemoveItemCallback(CoreResource* data);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void ReadStreamOnDataCallback(CoreResource* call_with, byte* data, uint data_len);
+        
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void ReadStreamOnEndCallback(CoreResource* call_with);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void ReadStreamOnErrorCallback(CoreResource* call_with);
 
         [DllImport("libice_core")]
         public static extern unsafe CoreServer* ice_create_server();
@@ -179,9 +198,8 @@ namespace SharpIce {
             string value
         );
         [DllImport("libice_core")]
-        public static extern unsafe CoreStream* ice_glue_response_stream(
-            CoreResponse* resp,
-            CoreContext* ctx
+        public static extern unsafe CoreWriteStream* ice_glue_response_create_wstream(
+            CoreResponse* resp
         );
         [DllImport("libice_core")]
         public static extern unsafe bool ice_core_fire_callback(
@@ -199,16 +217,6 @@ namespace SharpIce {
             CoreEndpoint* ep,
             string name,
             bool value
-        );
-        [DllImport("libice_core")]
-        public static extern unsafe void ice_core_stream_provider_send_chunk(
-            CoreStream* stream,
-            byte[] data,
-            uint len
-        );
-        [DllImport("libice_core")]
-        public static extern unsafe void ice_core_destroy_stream_provider(
-            CoreStream* stream
         );
         [DllImport("libice_core")]
         public static extern unsafe bool ice_core_cervus_enabled();
@@ -287,5 +295,37 @@ namespace SharpIce {
             KVStorageRemoveItemCallback callback,
             CoreResource* call_with
         );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_stream_rstream_begin_recv(
+            CoreReadStream* target,
+            ReadStreamOnDataCallback cb_on_data,
+            ReadStreamOnEndCallback cb_on_end,
+            ReadStreamOnErrorCallback cb_on_error,
+            CoreResource* call_with
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_stream_rstream_destroy(CoreReadStream* target);
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_stream_wstream_write(
+            CoreWriteStream* target,
+            byte[] data,
+            uint data_len
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_stream_wstream_destroy(
+            CoreWriteStream* target
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_stream_create_pair(
+            ref CoreRawTxRxPair output
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe System.IntPtr ice_metadata_get_version();
     }
 }

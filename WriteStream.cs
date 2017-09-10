@@ -1,13 +1,13 @@
 namespace SharpIce {
-    public class Stream {
-        unsafe CoreStream* inst;
+    public class WriteStream {
+        unsafe CoreWriteStream* inst;
         bool closed = false;
 
-        public unsafe Stream(CoreStream* _inst) {
+        public unsafe WriteStream(CoreWriteStream* _inst) {
             inst = _inst;
         }
 
-        ~Stream() {
+        ~WriteStream() {
             if(!closed) {
                 Close();
             }
@@ -24,7 +24,7 @@ namespace SharpIce {
         public void Write(byte[] data) {
             RequireActive();
             unsafe {
-                Core.ice_core_stream_provider_send_chunk(
+                Core.ice_stream_wstream_write(
                     inst,
                     data,
                     (uint) data.Length
@@ -40,7 +40,7 @@ namespace SharpIce {
             RequireActive();
             closed = true;
             unsafe {
-                Core.ice_core_destroy_stream_provider(inst);
+                Core.ice_stream_wstream_destroy(inst);
                 inst = null;
             }
         }

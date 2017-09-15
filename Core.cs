@@ -14,6 +14,13 @@ namespace SharpIce {
     public unsafe struct CoreHashMapExt {};
     public unsafe struct CoreReadStream {};
     public unsafe struct CoreWriteStream {};
+    public unsafe struct CoreHttpServerConfig {};
+    public unsafe struct CoreHttpServer {};
+    public unsafe struct CoreHttpServerExecutionContext {};
+    public unsafe struct CoreRouteInfo {};
+    public unsafe struct CoreHttpRequest {};
+    public unsafe struct CoreEndpointContext {};
+    public unsafe struct CoreHttpResponse {};
 
     public unsafe struct CoreRawTxRxPair {
         public CoreWriteStream* tx;
@@ -51,6 +58,19 @@ namespace SharpIce {
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public unsafe delegate void ReadStreamOnErrorCallback(CoreResource* call_with);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void RouteCallback(
+            CoreEndpointContext* ctx,
+            CoreHttpRequest* req,
+            CoreResource* call_with
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public unsafe delegate void GetStringInstantCallback(
+            System.IntPtr value,
+            CoreResource* call_with
+        );
 
         [DllImport("libice_core")]
         public static extern unsafe CoreServer* ice_create_server();
@@ -326,6 +346,113 @@ namespace SharpIce {
         );
 
         [DllImport("libice_core")]
+        public static extern unsafe void ice_glue_destroy_cstring(
+            System.IntPtr s
+        );
+
+        [DllImport("libice_core")]
         public static extern unsafe System.IntPtr ice_metadata_get_version();
+
+        [DllImport("libice_core")]
+        public static extern unsafe CoreHttpServerConfig* ice_http_server_config_create();
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_server_config_set_listen_addr(
+            CoreHttpServerConfig* cfg,
+            string addr
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_server_config_set_num_executors(
+            CoreHttpServerConfig* cfg,
+            uint n
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_server_config_destroy(
+            CoreHttpServerConfig* cfg
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe CoreHttpServer* ice_http_server_create(
+            CoreHttpServerConfig* cfg
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe CoreHttpServerExecutionContext* ice_http_server_start(
+            CoreHttpServer* server
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe CoreRouteInfo* ice_http_server_route_create(
+            string path,
+            RouteCallback callback,
+            CoreResource* call_with
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_server_route_destroy(
+            CoreRouteInfo* rt
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_server_add_route(
+            CoreHttpServer* server,
+            CoreRouteInfo* rt
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe CoreHttpResponse* ice_http_response_create();
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_response_destroy(
+            CoreHttpResponse* resp
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_response_set_body(
+            CoreHttpResponse* resp,
+            byte[] data,
+            uint len
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe bool ice_http_server_endpoint_context_end_with_response(
+            CoreEndpointContext* ctx,
+            CoreHttpResponse* resp
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_request_get_uri(
+            CoreHttpRequest* req,
+            GetStringInstantCallback cb,
+            CoreResource* call_with
+        );
+        [DllImport("libice_core")]
+        public static extern unsafe System.IntPtr ice_http_request_get_uri_to_owned(
+            CoreHttpRequest* req
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_request_get_method(
+            CoreHttpRequest* req,
+            GetStringInstantCallback cb,
+            CoreResource* call_with
+        );
+        [DllImport("libice_core")]
+        public static extern unsafe System.IntPtr ice_http_request_get_method_to_owned(
+            CoreHttpRequest* req
+        );
+
+        [DllImport("libice_core")]
+        public static extern unsafe void ice_http_request_get_remote_addr(
+            CoreHttpRequest* req,
+            GetStringInstantCallback cb,
+            CoreResource* call_with
+        );
+        [DllImport("libice_core")]
+        public static extern unsafe System.IntPtr ice_http_request_get_remote_addr_to_owned(
+            CoreHttpRequest* req
+        );
     }
 }
